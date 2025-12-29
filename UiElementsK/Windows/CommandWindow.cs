@@ -3,8 +3,7 @@ using UiElementsK.CodeGen.Attributes;
 
 namespace UiElementsK.Windows;
 
-[DependencyProperty("CloseCommand", typeof(ICommand))]
-[DependencyProperty("Test", typeof(int))]
-internal partial class CommandWindow : Window
-{
-}
+[DependencyProperty("CloseCommand1", typeof(ICommand), false)]
+[DependencyProperty("CloseCommand2", typeof(ICommand))]
+[DependencyProperty("Test", typeof(int), true)]
+internal partial class CommandWindow : Window;
