@@ -19,7 +19,7 @@ internal class ClassBuilder
             $$"""
               namespace {{symbol.ContainingNamespace.ToDisplayString()}};
 
-              public partial class {{symbol.Name}}
+              {{symbol.DeclaredAccessibility.ToString().ToLower()}} partial class {{symbol.Name}}
               {
               """);
 
@@ -31,12 +31,24 @@ internal class ClassBuilder
         var typeName = type.ToDisplayString();
 
         _builder.AppendLine();
-        _builder.AppendLine($"    public static readonly DependencyProperty {name}Property = DependencyProperty.Register(nameof({name}), typeof({typeName}), typeof({_className}));");
-        _builder.AppendLine();
-        _builder.AppendLine($"    public {typeName} {name} {{");
-        _builder.AppendLine($"        get => ({typeName})GetValue({name}Property);");
-        _builder.AppendLine($"        set => SetValue({name}Property, value);");
-        _builder.AppendLine("    }");
+        _builder.AppendLine($$"""
+                                  public static readonly DependencyProperty {{name}}Property = DependencyProperty.Register(nameof({{name}}), typeof({{typeName}}), typeof({{_className}}), new PropertyMetadata(On{{name}}Changed));
+                                  
+                                  public {{typeName}} {{name}} {
+                                      get => ({{typeName}})GetValue({{name}}Property);
+                                      set => SetValue({{name}}Property, value);
+                                  }
+                                  
+                                  private static void On{{name}}Changed(DependencyObject dpo, DependencyPropertyChangedEventArgs args) {
+                                      var target = ({{_className}})dpo;
+                                      var newValue = ({{typeName}})args.NewValue;
+                                      var oldValue = ({{typeName}})args.OldValue;
+                                      
+                                      target.On{{name}}Changed(newValue, oldValue);
+                                  }
+                                  
+                                  partial void On{{name}}Changed({{typeName}} newValue, {{typeName}} oldValue);
+                              """);
         _builder.AppendLine();
     }
 
